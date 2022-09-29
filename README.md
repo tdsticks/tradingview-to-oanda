@@ -3,6 +3,11 @@
 ## Summary
 I'm setting up a [web.py](https://webpy.org/) server that can run on PythonAnywhere (uploaded there through GitHub) which listens to TradingView alerts on a URL (i.e. webhook) and posts orders (and sets stop-losses, etc.) on OANDA through their API
 
+## Installation Requirements
+* Python 3.10.0
+* pip 22.2.2
+* pip install the requirements.txt file
+
 ## Things to consider
 * A sell order isn't actually handled as a sell order, but as closing all open positions for the given `instrument`.
   * Note that if this signal is sent to OANDA when the markets are closed, it will be cancelled.
