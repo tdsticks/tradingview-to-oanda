@@ -30,7 +30,7 @@ def fill_defaults(post_data):
     take_profit_percent = (
         float(post_data["take_profit_percent"])
         if "take_profit_percent" in post_data
-        else 0.06) # as positive decimal
+        else 0.01) # as positive decimal
     trading_type = (
         post_data["trading_type"]
         if "trading_type" in post_data

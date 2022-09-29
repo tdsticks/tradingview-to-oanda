@@ -22,29 +22,29 @@ I'm setting up a [web.py](https://webpy.org/) server that can run on PythonAnywh
 Any other parameters will not be handled, but are sent along. That means you will see them in your server logs.
 
 ## To-do
-1. ~~Set up development environment~~
-1. ~~Install and set up the web.py server~~
-1. ~~Have it listen to POST requests (test with Postman)~~
-1. ~~Parse the parameters sent in the request to variables that can be sent along to OANDA~~
-1. ~~Authenticate with the OANDA API~~
-1. ~~Send a test order to OANDA's paper trader~~
-1. ~~Add stop-losses and other risk management techniques to the OANDA call~~
-1. ~~Connect the local web.py server with the OANDA API call~~
-1. ~~Test if a request from Postman to the web.py server running locally reaches OANDA correctly~~
-1. ~~Find out why my limit order didn't go through in the beginning, but cancelled because it reaches the GTD. Maybe the market was closed? If that was the case the market won't move and there won't be any signals, right?~~
-1. ~~Add some kind of verification so that only I can send orders through my webhook~~
-1. ~~Move the server to PythonAnywhere so that TradingView can reach it~~
-1. ~~Setup TradingView to send an alert to the server on PythonAnywhere~~
-1. ~~Have the server return the result of a POST request for easier Postman debugging~~
-1. ~~Have the server translate what TradingView sends as `{{ticker}}` and `{{close}}` to what OANDA expects as `instrument` and `price`~~
-1. ~~Make `size` optional with a default value set server-side~~
-1. ~~Add different processing for buy and sell alerts~~
-1. ~~Fix the fact that `size` works for XAUEUR, but not for `EURUSD`~~
-1. ~~Rename `close` to `price` in the alerts and everywhere else, in case someone wants to use a different price~~
-1. ~~Add more alerts to TradingView once I have ironed out the JSON in the alerts~~
-1. ~~Automatically set price precision decimals and remove it as a parameter that can be messed with~~
-1. ~~Wait and see if one of those alerts from TradingView reaches OANDA correctly~~
-1. ~~Add a mechanism that notifies me of every order (email, maybe?)~~
+1. Set up development environment
+1. Install and set up the web.py server
+1. Have it listen to POST requests (test with Postman)
+1. Parse the parameters sent in the request to variables that can be sent along to OANDA
+1. Authenticate with the OANDA API
+1. Send a test order to OANDA's paper trader
+1. Add stop-losses and other risk management techniques to the OANDA call
+1. Connect the local web.py server with the OANDA API call
+1. Test if a request from Postman to the web.py server running locally reaches OANDA correctly
+1. Find out why my limit order didn't go through in the beginning, but cancelled because it reaches the GTD. Maybe the market was closed? If that was the case the market won't move and there won't be any signals, right?
+1. Add some kind of verification so that only I can send orders through my webhook
+1. Move the server to PythonAnywhere so that TradingView can reach it
+1. Setup TradingView to send an alert to the server on PythonAnywhere
+1. Have the server return the result of a POST request for easier Postman debugging
+1. Have the server translate what TradingView sends as `{{ticker}}` and `{{close}}` to what OANDA expects as `instrument` and `price`
+1. Make `size` optional with a default value set server-side
+1. Add different processing for buy and sell alerts
+1. Fix the fact that `size` works for XAUEUR, but not for `EURUSD`
+1. Rename `close` to `price` in the alerts and everywhere else, in case someone wants to use a different price
+1. Add more alerts to TradingView once I have ironed out the JSON in the alerts
+1. Automatically set price precision decimals and remove it as a parameter that can be messed with
+1. Wait and see if one of those alerts from TradingView reaches OANDA correctly
+1. Add a mechanism that notifies me of every order (email, maybe?)
 1. `git pull` the latest version to PythonAnywhere so that the email subject of sell orders is correct
 1. Code cleanup, more object-oriented, maybe?
 1. Think of a way to handle alerts based on the last candle of the day, which will most likely be triggering buys/sells when the markets are closed. Don't forget weekends
@@ -54,15 +54,17 @@ Any other parameters will not be handled, but are sent along. That means you wil
 * `pip install requests`
 * `pip install sendgrid`, if you choose to use [SendGrid's mail API](https://sendgrid.com/docs/API_Reference/api_v3.html) to send order confirmations from PythonAnywhere to yourself
 * a `credentials.json` file containing a JSON like this:
+* * I'm utilizing long and short accounts separately and will be telling the POST API calls to either long or short based on the signals.
+
 
 ```json
 {
-  "oanda_practice": {
-    "api_key": "<YOUR PRACTICE ACCOUNT API KEY>",
-    "account_id": "<YOUR PRACTICE ACCOUNT ID>"
+  "oanda_long": {
+    "api_key": "<YOUR LONG ACCOUNT API KEY>",
+    "account_id": "<YOUR LONG ACCOUNT ID>"
   },
-  "oanda_live": {
-    "api_key": "<YOUR LIVE ACCOUNT API KEY>",
+  "oanda_short": {
+    "api_key": "<YOUR SHORT ACCOUNT API KEY>",
     "account_id": "<YOUR LIVE ACCOUNT ID>"
   },
   "sendgrid": {
@@ -123,3 +125,60 @@ Note that these are the only valid endpoints. The server won't tell you anything
   Note:
   * The server is built in such a way that what TradingView sends as `{{ticker}}` is translated to what OANDA expects as `instrument` and `close` is translated to `price`
   * If you want to sell every position you have for this ticker, use "`sell`" as `action`
+
+
+## Add alerts to Aurox
+1. 1
+2. 2
+3. 3
+
+LONG Call:
+```json
+{
+    "action":"buy",
+    "ticker":"{{ticker}}",
+    "price":"{{price}}",
+    "units": 100,
+    "trailing_stop_loss_percent": 0.01,
+    "take_profit_percent": 0.01,
+    "trading_type": "long"
+}
+```
+
+LONG Example:
+```json
+{
+    "action":"buy",
+    "ticker":"USDCHF",
+    "price":"0.976",
+    "units": 100,
+    "trailing_stop_loss_percent": 0.01,
+    "take_profit_percent": 0.01,
+    "trading_type": "long"
+}
+```
+
+SHORT Call:
+```json
+{
+    "action":"buy",
+    "ticker":"{{ticker}}",
+    "price":"{{price}}",
+    "units": -100,
+    "trailing_stop_loss_percent": 0.01,
+    "take_profit_percent": -0.005,
+    "trading_type": "short"
+}
+```
+SHORT Example:
+```json
+{
+    "action":"buy",
+    "ticker":"USDCHF",
+    "price":"0.9792",
+    "units": -100,
+    "trailing_stop_loss_percent": 0.01,
+    "take_profit_percent": -0.005,
+    "trading_type": "short"
+}
+```

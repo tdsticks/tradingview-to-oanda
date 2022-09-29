@@ -30,8 +30,12 @@ def get_credentials(trading_type):
     return credentials
 
 def get_base_url(trading_type):
-    return "https://api-fx{}.oanda.com".format(
-        "trade" if trading_type == "live" else "practice")
+    print("get_base_url:", get_base_url)
+
+    # "https://api-fx{}.oanda.com".format("trade" if trading_type == "live" else "practice")
+    api_url = "https://api-fxtrade.oanda.com"
+    # print("api_url:", api_url)
+    return api_url
 
 def get_accounts(trading_type="practice"):
     # https://developer.oanda.com/rest-live-v20/account-ep/
@@ -39,6 +43,7 @@ def get_accounts(trading_type="practice"):
 
     try:
         credentials = get_credentials(trading_type)
+        # print("credentials:", credentials)
 
         url = "{}/v3/accounts".format(get_base_url(trading_type))
         headers = {
@@ -200,6 +205,7 @@ def sell_order(instrument, trading_type, **kwargs):
 
     try:
         credentials = get_credentials(trading_type)
+        # print("credentials:", credentials)
 
         url = "{}/v3/accounts/{}/positions/{}/close".format(
             get_base_url(trading_type),
@@ -245,14 +251,14 @@ if __name__ == "__main__":
     #     get_price_precisions(), indent=2, sort_keys=True)))
 
     # Uncomment this bit to send a buy order to OANDA
-    order_response = buy_order(
-        instrument="XAU_EUR",
-        units=1, # i.e. 1 unit (bar?) of gold
-        price=1486.891,
-        trailing_stop_loss_percent=0.03, # as positive decimal
-        take_profit_percent=0.06, # as positive decimal
-        trading_type="practice"
-    )
+    # order_response = buy_order(
+    #     instrument="USDCHF",
+    #     units=1, # i.e. 1 unit (bar?) of gold
+    #     price=1486.891,
+    #     trailing_stop_loss_percent=0.03, # as positive decimal
+    #     take_profit_percent=0.06, # as positive decimal
+    #     trading_type="practice"
+    # )
 
-    logging.info("{}: {}".format(
-        loc, json.dumps(order_response, indent=2, sort_keys=True)))
+    # logging.info("{}: {}".format(
+        # loc, json.dumps(order_response, indent=2, sort_keys=True)))
