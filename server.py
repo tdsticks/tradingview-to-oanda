@@ -6,7 +6,7 @@ import logging
 
 import web
 
-from oanda import buy_order, sell_order, get_datetime_now
+from oanda import buy_order, sell_order, get_datetime_now, get_credentials
 from sendgrid_api import send_mail
 
 def fill_defaults(post_data):
@@ -213,3 +213,46 @@ if __name__ == "__main__":
     # Start the server
     logging.info("{}: Starting the server".format(loc))
     app.run()
+
+
+    #############################################
+    ## TESTING
+    #############################################
+    '''
+    print(":get_market_prices:")
+
+    creds = get_credentials("long")
+
+    # import oandapyV20
+    from oandapyV20 import API
+    import oandapyV20.endpoints.pricing as pricing
+    import oandapyV20.endpoints.trades as trades
+
+    access_token = creds['api_key']
+    accountID = creds['account_id']
+    client = API(access_token=access_token, environment="live")
+
+    params = {
+        "instruments": "USD_JPY"
+    }
+
+    # r = trades.TradesList(accountID)
+    price_request = pricing.PricingInfo(accountID=accountID, params=params)
+    # print("REQUEST:{}".format(price_request))
+
+    price_response = client.request(price_request)
+    # print("price_response:", price_response, type(price_response))
+
+    # price_res_json = json.dumps(price_response, indent=2)
+    # print("RESPONSE:\n{}".format(price_res_json))
+
+    price_ask = float(price_response['prices'][0]['asks'][0]['price'])
+    price_bid = float(price_response['prices'][0]['bids'][0]['price'])
+    print("price_ask:", price_ask)
+    print("price_bid:", price_bid)
+
+    spread = str(price_ask - price_bid)[:7]
+    market = (price_ask + price_bid) / 2
+    print("spread:", spread)
+    print("market:", market, type(market))
+    '''
