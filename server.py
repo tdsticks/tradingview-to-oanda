@@ -6,7 +6,9 @@ import logging
 
 import web
 
-from oanda import buy_order, sell_order, get_datetime_now, get_credentials
+from oanda import buy_order, sell_order, get_datetime_now
+# from oanda import get_credentials
+
 from sendgrid_api import send_mail
 
 def fill_defaults(post_data):
