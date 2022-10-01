@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os.path
+import random
 
 import requests
 
@@ -30,7 +31,7 @@ def get_credentials(trading_type):
     return credentials
 
 def get_base_url(trading_type):
-    print("get_base_url:", get_base_url)
+    # print("get_base_url:", get_base_url)
 
     # "https://api-fx{}.oanda.com".format("trade" if trading_type == "live" else "practice")
     api_url = "https://api-fxtrade.oanda.com"
@@ -84,10 +85,15 @@ def get_instruments(trading_type="practice"):
         raise
 
 def get_price_precision(instrument, trading_type="practice"):
+    # print(":get_price_precision:")
+    # print(" instrument", instrument)
+    # print(" trading_type", trading_type)
     price_precisions = get_price_precisions(trading_type)
     return price_precisions[instrument]
 
 def get_price_precisions(trading_type="practice"):
+    # print(":get_price_precisions:")
+    # print(" trading_type", trading_type)
     price_precisions_file = "price_precisions.json"
 
     if os.path.isfile(price_precisions_file):
@@ -97,7 +103,6 @@ def get_price_precisions(trading_type="practice"):
     else:
         price_precisions = save_price_precisions(
             price_precisions_file, trading_type)
-
     return price_precisions
 
 def save_price_precisions(price_precisions_file, trading_type="practice"):
@@ -126,9 +131,25 @@ def get_filtered_instruments(instrument_filter="EUR", trading_type="practice"):
 
     return filtered_instruments
 
+def add_random_units(units):
+    # print(" units", units, type(units))
+
+    beg_units_str = str(units)[:-2]
+    # print(" beg_units_str", beg_units_str, type(beg_units_str))
+
+    random_units = str(random.randint(10, 99))
+    # print(" random_units", random_units, type(random_units))
+
+    new_units = int(beg_units_str + random_units)
+    # print(" new_units", new_units, type(new_units))
+
+    return new_units
+
 def buy_order(instrument, units, price, trailing_stop_loss_percent,
               take_profit_percent, trading_type="practice",
               **kwargs):
+    # print(":buy_order:")
+
     # https://developer.oanda.com/rest-live-v20/order-ep/
     loc = "oanda.py:buy_order"
 
@@ -145,6 +166,8 @@ def buy_order(instrument, units, price, trailing_stop_loss_percent,
         trailing_stop_loss_distance = trailing_stop_loss_percent * price
         take_profit_price = price * (1 + take_profit_percent)
 
+        new_units = add_random_units(units)
+
         payload = {
             "order": {
                 "type": "LIMIT",
@@ -152,7 +175,7 @@ def buy_order(instrument, units, price, trailing_stop_loss_percent,
                 "timeInForce": "GTD",
                 "gtdTime": get_datetime_offset(15), # i.e. 15 m from now
                 "instrument": instrument,
-                "units": "{0:d}".format(units), # whole units
+                "units": "{0:d}".format(new_units), # whole units
                 "price": "{0:.{1}f}".format(price, price_decimals),
                 "trailingStopLossOnFill": {
                     "distance": "{0:.{1}f}".format(trailing_stop_loss_distance,
@@ -199,13 +222,104 @@ def buy_order(instrument, units, price, trailing_stop_loss_percent,
 
         return response_json
 
+# def sell_order_new(instrument, units, price, trailing_stop_loss_percent,
+#               take_profit_percent, trading_type="practice",
+#               **kwargs):
+#     print(":sell_order:")
+#
+#     # https://developer.oanda.com/rest-live-v20/order-ep/
+#     loc = "oanda.py:sell_order"
+#
+#     try:
+#         credentials = get_credentials(trading_type)
+#         price_decimals = get_price_precision(instrument, trading_type)
+#
+#         url = "{}/v3/accounts/{}/orders".format(
+#             get_base_url(trading_type),
+#             credentials["account_id"]
+#         )
+#         print(" url:", url)
+#
+#         # Convert the entered percentages to the absolute values OANDA expects
+#         trailing_stop_loss_distance = trailing_stop_loss_percent * price
+#         take_profit_price = price * (1 + take_profit_percent)
+#
+#         # print(" units", units, type(units))
+#
+#         beg_units_str = str(units)[:-2]
+#         # print(" beg_units_str", beg_units_str, type(beg_units_str))
+#
+#         random_units = str(random.randint(10, 99))
+#         # print(" random_units", random_units, type(random_units))
+#
+#         new_units = int(beg_units_str + random_units)
+#         # print(" new_units", new_units, type(new_units))
+#
+#         payload = {
+#             "order": {
+#                 "type": "LIMIT",
+#                 "positionFill": "DEFAULT",
+#                 "timeInForce": "GTD",
+#                 "gtdTime": get_datetime_offset(15), # i.e. 15 m from now
+#                 "instrument": instrument,
+#                 "units": "{0:d}".format(new_units), # whole units
+#                 "price": "{0:.{1}f}".format(price, price_decimals),
+#                 "trailingStopLossOnFill": {
+#                     "distance": "{0:.{1}f}".format(trailing_stop_loss_distance,
+#                                                    price_decimals),
+#                     "timeInForce": "GTC",
+#                     "clientExtensions": {
+#                         "comment": "oanda.py/sell_order/trailing_stop_loss",
+#                         "tag": "trailing_stop_loss",
+#                         "id": "{}_trailing_stop_loss".format(get_datetime_now())
+#                     },
+#                 },
+#                 "takeProfitOnFill": {
+#                     "price": "{0:.{1}f}".format(take_profit_price, price_decimals),
+#                     "clientExtensions": {
+#                         "comment": "oanda.py/sell_order/take_profit",
+#                         "tag": "take_profit",
+#                         "id": "{}_take_profit".format(get_datetime_now())
+#                     },
+#                 },
+#                 "clientExtensions": {
+#                     "comment": "oanda.py/sell_order/entry",
+#                     "tag": "entry",
+#                     "id": "{}_entry".format(get_datetime_now())
+#                 },
+#             }
+#         }
+#
+#         payload_str = json.dumps(payload)
+#         print(" sell payload_str", payload_str)
+#
+#         headers = {
+#             "Content-Type": "application/json",
+#             "Authorization": "Bearer {}".format(credentials["api_key"]),
+#             "Accept-Datetime-Format": "RFC3339"
+#         }
+#
+#         response = requests.request(
+#             "POST", url, headers=headers, data=payload_str)
+#     except Exception as e:
+#         logging.exception("{}: Could not send the buy order to OANDA: {}"
+#                           .format(loc, e))
+#         raise
+#     else:
+#         response_text = response.text.encode("utf8")
+#         response_json = json.loads(response_text)
+#
+#         return response_json
+
 def sell_order(instrument, trading_type, **kwargs):
     # https://developer.oanda.com/rest-live-v20/position-ep/
     loc = "oanda.py:sell_order"
 
+    kwargs['units'] = add_random_units(kwargs['units'])
+    # print("kwargs:", kwargs)
+
     try:
         credentials = get_credentials(trading_type)
-        # print("credentials:", credentials)
 
         url = "{}/v3/accounts/{}/positions/{}/close".format(
             get_base_url(trading_type),
